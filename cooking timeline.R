@@ -336,11 +336,94 @@ GreenBeans <- mermaid(
 
 
 
-
-library(httr)
-recipe <- GET(url = "www.acouplecooks.com/vegan-fajitas")
-
 #Next things to do:
 #1. Figure out how to make my data into a Shiny App
 #2. Figure out how to pull data out of this online recipe
 #3. If Step 2 fails, just pull it by hand and start building a catalog.
+
+
+
+#2. Figure out how to pull data out of this online recipe
+library(httr)
+recipe <- GET(url = "www.acouplecooks.com/vegan-fajitas")
+library(rvest) # will be used to parse HTML
+
+print(content(recipe))
+
+#getting the article
+article <- html_nodes(content(recipe), "article")
+print(html_text(article)[[1]])
+
+##copied from another project
+opinions <- lapply(files[1:3], article)
+opinions2 <- lapply(files[5], article)
+
+
+# install.packages("tm")
+# install.packages("SnowballC")
+library(tm)
+library(SnowballC)
+corp <- Corpus(URISource(files[1:3]),
+               readerControl = list(reader = readPDF))
+
+opinions.tdm <- TermDocumentMatrix(corp, 
+                                   control = 
+                                     list(removePunctuation = TRUE,
+                                          stopwords = TRUE,
+                                          tolower = TRUE,
+                                          stemming = TRUE,
+                                          removeNumbers = TRUE,
+                                          bounds = list(global = c(3, Inf)))) 
+
+inspect(opinions.tdm[1:10,]) 
+
+corp <- tm_map(corp, removePunctuation, ucp = TRUE)
+
+opinions.tdm <- TermDocumentMatrix(corp, 
+                                   control = 
+                                     list(stopwords = TRUE,
+                                          tolower = TRUE,
+                                          stemming = TRUE,
+                                          removeNumbers = TRUE,
+                                          bounds = list(global = c(3, Inf))))
+
+inspect(opinions.tdm[1:10,]) 
+
+findFreqTerms(opinions.tdm, lowfreq = 100, highfreq = Inf)
+
+ft <- findFreqTerms(opinions.tdm, lowfreq = 100, highfreq = Inf)
+as.matrix(opinions.tdm[ft,]) 
+
+ft.tdm <- as.matrix(opinions.tdm[ft,])
+sort(apply(ft.tdm, 1, sum), decreasing = TRUE)
+
+#applying the lesson to gentlemen bastards series
+corp_gb <- Corpus(URISource(files[5]),
+                  readerControl = list(reader = readPDF))
+
+lamora.tdm <- TermDocumentMatrix(corp_gb, 
+                                 control = 
+                                   list(removePunctuation = TRUE,
+                                        stopwords = TRUE,
+                                        tolower = TRUE,
+                                        stemming = FALSE,
+                                        removeNumbers = TRUE)) 
+
+inspect(lamora.tdm)
+
+findFreqTerms(lamora.tdm, lowfreq = 100, highfreq = Inf)
+
+acqTag <- tagPOS(corp_gb[["the-gentleman-bastard-series-3-book-bundle-scott-lynch.pdf"]][["content"]])
+
+#install.packages("openNLP")
+library("openNLP")
+
+acqTag <- tagPOS(opinions2, language = "en") 
+acqdf <- read.table(textConnection(gsub(" ", "\n", acqTag)), sep="/", stringsAsFactors=FALSE)
+acqdf$nnadj <- grepl("NN|JJ", acqdf$V2)
+acqdf$nnadj 
+
+acqdf$nnadj[1:(nrow(acqdf)-1)] & acqdf$nnadj[2:nrow(acqdf)]
+
+acqdf$pair <- c(NA, acqdf$nnadj[1:(nrow(acqdf)-1)] & acqdf$nnadj[2:nrow(acqdf)])
+acqdf[1:7, ]
