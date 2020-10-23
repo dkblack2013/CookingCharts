@@ -1,13 +1,20 @@
 #install.packages("timelineS")
-library(timelineS)
+#library(timelineS)
 library(ggplot2)
-library(gcookbook)
+#library(gcookbook)
 library(plyr)
-library(timeline)
+#library(timeline)
 library(shiny)
 library(ggrepel)
 library(tidyr)
 library(dplyr)
+library(xml2)
+library(stringr)
+library(httr)
+library(rvest) # will be used to parse HTML
+
+
+#####Determining what I want my Gantt Charts to look like#####
 timelineS(mj_life, main = "Life of Michael Jackson")
 head(timelineS::mj_life)
 
@@ -342,19 +349,85 @@ GreenBeans <- mermaid(
 #3. If Step 2 fails, just pull it by hand and start building a catalog.
 
 
-
+#####Pulling a recipe from the internet#####
 #2. Figure out how to pull data out of this online recipe
-library(httr)
-recipe <- GET(url = "www.acouplecooks.com/vegan-fajitas")
-library(rvest) # will be used to parse HTML
 
-print(content(recipe))
+recipe <- GET(url = "www.acouplecooks.com/vegan-fajitas")
+#print(content(recipe))
 
 #getting the article
 article <- html_nodes(content(recipe), "article")
-print(html_text(article)[[1]])
+#print(html_text(article)[[1]])
 
-##copied from another project
+
+#Setting my working directory
+setwd("C:/Users/dkbla/Documents/R/Cooking_Timelines")
+
+#Taking the html and converting it to UTF-8
+html_text(article)[[1]] %>% 
+  iconv(to="UTF-8") %>% 
+  writeLines("C:/Users/dkbla/Documents/R/Cooking_Timelines/recipe1.txt")
+
+#reading the recipe from the converted text file (might be unnecessary)
+recipe1 <- readLines("recipe1.txt")
+  
+#recipe1_collapsed <- paste(readLines("recipe1.txt"), collapse = " ")
+
+#str_split(recipe1_collapsed, " ")
+#substr(recipe1_collapsed, start=3, stop=6)
+
+#determining the positions within
+pos1 <- grep("Ingredients", recipe1)
+pos2 <- grep("Instructions", recipe1)
+pos3 <- grep("Notes", recipe1)
+pos4 <- grep("Author", recipe1)
+pos5 <- grep("Prep Time:", recipe1)
+pos6 <- grep("Cook Time:", recipe1)
+pos7 <- grep("Total Time:", recipe1)
+
+#this prints the ingredients and instructions
+#print(recipe1[1729:1762])
+
+#finding the exact data I want from the url
+recipe1_ingredients <- (recipe1[(pos1[2]+2):(pos2-4)])
+recipe1_instructions <- (recipe1[(pos2+2):(pos3-3)])
+recipe1_times <- c(1,1,1,1,1,1,1)
+recipe1_names <- c("Instructions", "Time")
+recipe1_data <- data.frame(recipe1_instructions, recipe1_times)
+colnames(recipe1_data)=recipe1_names
+
+#We have to clean this data and make sure it's conducive for a Gantt Chart.
+#Need to split up the second and possibly other instructions.
+grep("Preheat", recipe1_data[1])
+substr(recipe1_data$Instructions[2], start=1, stop=gregexpr(" ",recipe1_data$Instructions[2])[[1]][1])
+
+
+
+#need to impute the time values based on the words in the instructions
+#this is an idea, but it needs a lot of work
+# imputeTimes <- function(x) {
+#   df %>% 
+#     select(x) %>% 
+#     summarize(missing = sum(is.na(.))) %>%
+#     mutate(var =x)
+#   
+# }
+# 
+# collectedPercent <- map_dfr(colnames(df), getPercent) %>% 
+#   mutate(n=nrow(df)) %>% 
+#   mutate(percentage = (missing/n)*100) %>% 
+#   select(var, percentage)
+
+#####Imputing Cooking Information#####
+#I think I will have to give the function basic cooking time values, such as oven pre-heating time
+#The time will vary depending on the oven; however, 
+#the average time is 15 minutes to preheat an oven to 350° F (180° C). 
+#Preheating to 450° F (230° C) will require an additional 5 minutes
+
+
+
+#####Ignore for Now#####
+##copied from another NLP project
 opinions <- lapply(files[1:3], article)
 opinions2 <- lapply(files[5], article)
 
