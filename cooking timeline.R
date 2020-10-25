@@ -398,10 +398,11 @@ colnames(recipe1_data)=recipe1_names
 
 #We have to clean this data and make sure it's conducive for a Gantt Chart.
 #Need to split up the second and possibly other instructions.
+#https://statisticsglobe.com/find-position-of-character-in-string-in-r
 grep("Preheat", recipe1_data[1])
-substr(recipe1_data$Instructions[2], start=1, stop=gregexpr(" ",recipe1_data$Instructions[2])[[1]][1])
-
-
+substr(recipe1_data$Instructions[2], start=1, stop=gregexpr(".",recipe1_data$Instructions[2])[[1]][1])
+str_locate_all(pattern = ". ", recipe1_data$Instructions[2])
+which(strsplit(recipe1_data$Instructions[2], "x")[[1]] == ".")
 
 #need to impute the time values based on the words in the instructions
 #this is an idea, but it needs a lot of work
