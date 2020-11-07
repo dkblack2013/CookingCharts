@@ -475,8 +475,8 @@ for (i in 1:length(Instructions2)){
 #####Imputing Cooking Information#####
 #I think I will have to give the function basic cooking time values, such as oven pre-heating time
 #The time will vary depending on the oven; however, 
-#the average time is 15 minutes to preheat an oven to 350° F (180° C). 
-#Preheating to 450° F (230° C) will require an additional 5 minutes
+#the average time is 15 minutes to preheat an oven to 350Â° F (180Â° C). 
+#Preheating to 450Â° F (230Â° C) will require an additional 5 minutes
 
 
 
