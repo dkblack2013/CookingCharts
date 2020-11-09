@@ -3,7 +3,6 @@ Charts to help with the cooking process. When I cook, my food always comes out a
 
 ## Usage
 Download Cooking_Timeline_App.R and run with R Studio to view cooking timelines.
-(Goal will be to do something similar to https://github.com/MangoTheCat/shinyAppDemo)
 
 ## Contents
 * Cooking_Timeline_App.R - the main shiny app file
