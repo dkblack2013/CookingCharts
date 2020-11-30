@@ -113,16 +113,17 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+  output$timeline <- renderPlot(hist(runif(500, 1, 99)))  
     # output$timeline <- renderDiagrammeR({
     # recipeValue <- input$Recipe
     # #print the selected graphic
     # recipes[recipeValue]
     #})
-    renderDiagrammeR({
-      mermaid(
-        paste0(input$Recipe)
-      )  
-    })
+    #renderDiagrammeR({
+    #  mermaid(
+    #    paste0(input$Recipe)
+    #  )  
+    #})
 }
 
 # Run the application 
